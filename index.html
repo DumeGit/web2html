@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Uništavanje kvadrata igra</title>
+    <style>
+        canvas {
+            border: 1px solid #000000;
+            background-color: #f1f1f1;
+        }
+    </style>
+    <script>
+        var rectangles = [];
+        var destroyedCount = 0;
+        function startGame() {
+            var rand = getRandomInt(10) + 1;
+            for(var i = 0; i < rand; i++) {
+                rectangles.push(new rectangle(30, 30, "red", getRandomInt(450) + 30, getRandomInt(240) + 30, getRandomInt(5) + 1, getRandomInt(5) + 1));
+            }
+            canvasArea.start();
+        }
+
+        var canvasArea = {
+            canvas: document.createElement("canvas"),
+            start: function () {
+                this.canvas.id = "myGameCanvas";
+                this.canvas.width = 480;
+                this.canvas.height = 270;
+                this.context = this.canvas.getContext("2d");
+                document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+                this.frameNo = 0;
+
+                this.canvas.addEventListener('click', function(event) {
+                    var x = event.pageX,
+                    y = event.pageY;
+                
+                    for(var i = 0; i < rectangles.length; i++) {
+                        var element = rectangles[i];
+                        if (y > element.y && y < element.y + element.height 
+                            && x > element.x && x < element.x + element.width) {
+                            destroyedCount++;
+                            rectangles.splice(i, 1);
+                            document.getElementById("count").innerText = rectangles.length;
+                        }
+                    }
+
+                }, false);
+
+                this.interval = setInterval(updateGameArea, 20);
+            },
+            stop: function () {
+                clearInterval(this.interval);
+            },
+            clear: function () {
+                this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.context.font = '20px serif';
+                this.context.fillText("Zive: " + rectangles.length, 380, 20);
+                this.context.fillText("Unistene: " + destroyedCount, 380, 40);
+            }
+        }
+
+        function rectangle(width, height, color, x, y, speed_x, speed_y) {
+            this.width = width;
+            this.height = height;
+            this.speed_x = speed_x;
+            this.speed_y = speed_y;
+            this.x = x;
+            this.y = y;
+            this.update = function () {
+                ctx = canvasArea.context;
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.fillStyle = color;
+                ctx.fillRect(this.width / -2, this.height / -2, this.width, this.height);
+                ctx.restore();
+            }
+            this.newPos = function () {
+                if (this.x - this.width / 2 < 0)
+                    this.speed_x = speed_x + getRandomInt(5);
+                else if ((this.x + this.width / 2) >= canvasArea.context.canvas.width)
+                    this.speed_x = -speed_x - getRandomInt(5);
+                if (this.y - this.height / 2 < 0)
+                    this.speed_y = -speed_y - getRandomInt(5);
+                else if ((this.y + this.height / 2) >= canvasArea.context.canvas.height)
+                    this.speed_y = speed_y + getRandomInt(5);
+                this.x += this.speed_x;
+                this.y -= this.speed_y;
+            }
+        }
+
+        function updateGameArea() {
+            canvasArea.clear();
+            rectangles.forEach(piece => {
+                piece.newPos();
+                piece.update();
+            })
+        }
+
+        function getRandomInt(max) {
+            return Math.floor(Math.random() * max);
+        }
+    </script>
+</head>
+
+<body onload="startGame()">
+    <h1>Uništavanje kvadrata igra</h1>
+</body>
+
+</html>
